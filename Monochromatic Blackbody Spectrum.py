@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # coding: utf-8
-
-# In[1]:
-
+"""
+Photon spectrum for a monochromatic minidisk. Unprimed values refer to the minidisk's reference frame, and primed 
+values refer to the observer's reference frame.
+"""
 
 import numpy as np
 import math
@@ -156,18 +157,6 @@ for j in range (len(t)):
     Iobs2.append((nuobs2[j] / nu)**3 * K * (nu)**(alpha))
 I = K * nu**alpha   #actual intensity [W/m^2]
 
-    
-
-
-# In[25]:
-
-
-"""
-Photon spectrum for a monochromatic minidisk. Unprimed values refer to the minidisk's reference frame, and primed 
-values refer to the observer's reference frame.
-"""
-import matplotlib.pyplot as plt
-
 # Input Parameters
 T = 10000   #disk temperature [K]
 d = 1500   #distace to BH [ly]
@@ -249,10 +238,10 @@ lamda_nm = lamda_peak * 1e9   #wavelength [nm]
 lamda_nmprime = []   #Doppler shifted wavelength [nm]
 for j in range (len(t)):
     lamda_nmprime.append(lamda_prime[j] * 1e9) 
-    
+
+"""    
 # Array of Unprimed Values For Plotting
 lamda_nmar = np.linspace(lamda_nm, lamda_nm, num=len(t))
-N_ar = np.linspace(N, N, num=len(t))
 Pr_ar = np.linspace(Pr, Pr, num=len(t))
     
 # Plots 
@@ -277,16 +266,4 @@ plt.legend(["Source Frame", "Observer Frame"], loc="upper right")
 plt.xlabel("Time [yr]")
 plt.ylabel("Wavelength [nm]")
 plt.title("Doppler Shifted Wavelengths")
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
+"""

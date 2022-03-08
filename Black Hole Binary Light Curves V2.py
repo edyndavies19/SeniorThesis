@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[6]:
-
-
 """
 Changes from V1: System lies flat on xy plane, observer can be located at any xyz position using argument of periapse (omega) 
 and inclination (i). i=0 means observer is looking edge-on from the xy-plane, i=90 means observer is looking face-on from the 
@@ -167,7 +164,7 @@ I = K * nu**alpha   #actual intensity [W/m^2]
 t_yr = []   #time [yr]
 for j in range (len(t)):
     t_yr.append(t[j] / 3.154e7)
-
+"""
 # Plot Orbits
 plt.figure(6)
 plt.plot(x1, y1,'r-', x2, y2,'k-', cm, 0, 'mo')
@@ -194,22 +191,4 @@ plt.xlabel("Time [yr]")
 plt.ylabel("Observed Intensity [W/m^2]")
 plt.title("Light Curves")
 plt.legend(["Primary Black Hole", "Secondary Black Hole"], loc="upper right")
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
+"""

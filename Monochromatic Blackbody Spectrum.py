@@ -17,10 +17,15 @@ a = 0.01   #semimajor axis [pc]
 nu = 100   #frequency emitted [nm]
 i = 90   #inclination [deg]
 omega = 45   #argument of periaspe [deg]
+T = 10000   #disk temperature [K]
+d = 1500   #distace to BH [ly]
 
 # Constants
 G = 6.67e-11   #gravitational constant [m^3/kg*s^2]
 c = 3e8   #speed of light [m/s]
+h = 6.626e-34   #Planck's consant [J/Hz]
+sigma = 5.67e-8   #Stefan-Boltzmann constant [W/m^2*K^4] 
+k = 1.38e-23   #Boltzmann constant [J/K]
 
 # Convert to SI Units
 m1 = m1 * 1.989e+30   #mass of primary BH [kg]
@@ -29,6 +34,7 @@ a = a * 3.086e+16   #semimajor axis [m]
 nu = nu * 1e-9   #frequency [m]
 i = math.radians(i)   #inclination [rad]
 omega = math.radians(omega)   #argument of periapse [rad]
+d = d * 9.461e15   #distace to BH [m]
 
 # Mass Ratio and Center of Mass
 q = m2 / m1   #mass ratio
@@ -157,43 +163,35 @@ for j in range (len(t)):
     Iobs2.append((nuobs2[j] / nu)**3 * K * (nu)**(alpha))
 I = K * nu**alpha   #actual intensity [W/m^2]
 
-# Input Parameters
-T = 10000   #disk temperature [K]
-d = 1500   #distace to BH [ly]
-ar_o = 28.27   #area of reciever/observer [m^2] (set as telescope with 3m-radius)
-
-# Constants
-G = 6.67e-11   #gravitational constant [m^3/kg*s^2]
-c = 3e8   #speed of light [m/s]
-h = 6.626e-34   #Planck's consant [J/Hz]
-sigma = 5.67e-8   #Stefan-Boltzmann constant [W/m^2*K^4] 
-k = 1.38e-23   #Boltzmann constant [J/K]
-
-# Convert to SI Units
-d = d * 9.461e15   #distace to BH [m]
 
 # Wavelength and Frequency
 lamda_peak = 2.898e-3 / T   #peak wavelength [m]
-nu = c / lamda_peak   #frequency [s^-1]   
-    
-# Number of Photons and Energy
-E_p = h * c / lamda_peak   #energy per photon [J]
-N = sigma * T**4 / E_p   #number of photons    
-E = N * E_p   #total energy of photons [J]
-   
-Ndot = []   #spectral flux per unit wavelength(dN/dEdt) [W/m]
-for j in range (len(t)):
-    Ndot.append(N / (E * t[j]))
+nu = c / lamda_peak   #frequency [s^-1]  
 
 # Power Received
-rs = 3 * a * (1 + np.sqrt(2)) / 2   #radius of disk [m] from models in Minidisks in Binary Black Hole Accretion, Geoffrey Ryan and Andrew McFayden
+rs = a / 3   #radius of disk [m] from models in Minidisks in Binary Black Hole Accretion, Geoffrey Ryan and Andrew McFayden
 ar_s = math.pi * rs**2   #area of disk/source [m^2]
-Pr = sigma * ar_s * T**4   #power received [W]
+Pe = sigma * ar_s * T**4   #power emitted [W]
+
+# Number of Photons and Energy
+E_p = h * nu   #energy per photon [J]
+E_tot = []   #total energy [J]
+N = []   #number of photons
+for j in range (len(t)):
+    E_tot.append(Pe * (t[j] - t[0]))
+    N.append(E_tot[j] / E_p)
+     
+Ndot = []   #number of photons emitted per second [s^-1]
+for j in range (len(t)):
+    if t[j]==t[0]:
+        Ndot.append(N[j] / (t[j+1] - t[0]))
+    else:
+        Ndot.append(N[j] / (t[j] - t[0]))
 
 # Velocity
 vpho = []   #shift in photon velocity along LOS [m/s]
 for j in range (len(t)):
-    vpho.append(-v1par[j])   #negative since source moving away from observer has positive velocity
+    vpho.append(-v1par[j])   #source moving away from observer must have positive velocity
     
 # Doppler Shifts
 beta = []   #beta ratio
@@ -208,23 +206,35 @@ for j in range (len(t)):
     T_prime.append(T * ((c - vpho[j]) / (c + vpho[j]))**0.5)
     nu_prime.append(nu * (1 + beta[j])**0.5 / (1 - beta[j])**0.5)
     t_prime.append(t[j] / (1 - beta[j]**2)**0.5)
-    lamda_prime.append(lamda_peak * (1 - beta[j]))
+    lamda_prime.append(lamda_peak * (1 + beta[j]))
 
-E_prime = []   #Doppler shifted radiant energy [J]
+Pe_prime = []   #Doppler shifted power emitted [W]
 for j in range (len(t)):
-    E_prime.append(sigma * T_prime[j]**4)
-                     
-N_prime = []   #Doppler shifted number of photons 
+    Pe_prime.append(sigma * ar_s * T_prime[j]**4) 
+
+E_pprime = []   #Doppler shifted energy per photon [J]
 for j in range (len(t)):
-    N_prime.append(E_prime[j] / (h * nu_prime[j]))
- 
-Ndot_prime = []   #Doppler shifted spectral flux per unit wavelength[W/m]
-for j in range (len(t)):
-    Ndot_prime.append((N_prime[j]) / ((E_prime[j]) * (t_prime[j])))
+    E_pprime.append(h * nu_prime[j])
     
-Pr_prime = []   #Doppler shifted power received [W]
+E_totprime = []   #Doppler shifted total energy [J]
+N_prime = []   #Doppler shifted number of photons
 for j in range (len(t)):
-    Pr_prime.append(sigma * ar_s * T_prime[j]**4)  
+    E_totprime.append(Pe_prime[j] * (t_prime[j] - t_prime[0]))
+    N_prime.append(E_totprime[j] / E_pprime[j])
+
+Ndot_prime = []   #Doppler shifted number of photons emitted per second [s^-1]
+for j in range (len(t)):
+    if t_prime[j]==t_prime[0]:
+        Ndot_prime.append(N_prime[j] / (t_prime[j+1] - t_prime[0]))
+    else:
+        Ndot_prime.append(N_prime[j] / (t_prime[j] - t_prime[0]))
+        
+# Power Received
+Pr = Pe / (4 * math.pi * d**2)   #power received [W/m^2]
+Pr_prime = []   #Doppler shifted power received [W/m^2]
+for j in range (len(t)):
+    Pr_prime.append(Pe_prime[j] / (4 * math.pi * d**2))
+
     
 # Convert Time into Years
 t_yr = []   #time [yr]
@@ -238,32 +248,3 @@ lamda_nm = lamda_peak * 1e9   #wavelength [nm]
 lamda_nmprime = []   #Doppler shifted wavelength [nm]
 for j in range (len(t)):
     lamda_nmprime.append(lamda_prime[j] * 1e9) 
-
-"""    
-# Array of Unprimed Values For Plotting
-lamda_nmar = np.linspace(lamda_nm, lamda_nm, num=len(t))
-Pr_ar = np.linspace(Pr, Pr, num=len(t))
-    
-# Plots 
-#BH is apporaching observer at t~8yr
-plt.figure(1)
-plt.plot(t_yr, Ndot, 'r-', t_primeyr, Ndot_prime, 'k--')
-plt.legend(["Source Frame", "Observer Frame"], loc="upper right")
-plt.xlabel("Time [yr]")
-plt.ylabel("Spectral Flux (Ndot) [W/m]")
-plt.title("Photon Flux")
-
-plt.figure(2)
-plt.plot(t_yr, Pr_ar, 'r-', t_primeyr, Pr_prime, 'k--')
-plt.legend(["Source Frame", "Observer Frame"], loc="upper right")
-plt.xlabel("Time [yr]")
-plt.ylabel("Power Recieved [W]")
-plt.title("Power Recieved by Observer")
-
-plt.figure(3)
-plt.plot(t_yr, lamda_nmar, 'r-', t_primeyr, lamda_nmprime, 'k--')
-plt.legend(["Source Frame", "Observer Frame"], loc="upper right")
-plt.xlabel("Time [yr]")
-plt.ylabel("Wavelength [nm]")
-plt.title("Doppler Shifted Wavelengths")
-"""

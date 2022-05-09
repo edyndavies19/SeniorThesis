@@ -156,7 +156,7 @@ I = K * nu**alpha   #actual intensity [W/m^2]
 
 
 """
-Entire photon spectrum for a monochromatic minidisk. Unprimed values refer to the minidisk's reference frame, and primed 
+Entire photon spectrum for a minidisk. Unprimed values refer to the minidisk's reference frame, and primed 
 values refer to the observer's reference frame. 
 """
 import matplotlib.pyplot as plt

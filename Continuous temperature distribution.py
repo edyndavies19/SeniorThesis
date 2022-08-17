@@ -1,20 +1,12 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
-
-
-"""
-Temperatures defined by T = R^alpha with alpha = 0.75. Temperature is continuous across minidisk. 
-"""
-
-
-# In[1]:
-
-
 import numpy as np
 import math
 import matplotlib.pyplot as plt
+from decimal import Decimal, getcontext
+from mpmath import *
+mp.dps=10
 
 # Input Parameters
 m1 = 2e9   #mass of primary BH [solar masses]
@@ -25,10 +17,15 @@ nu = 100   #frequency emitted [nm]
 i = 90   #inclination [deg]
 omega = 45   #argument of periaspe [deg]
 n = 2   #number of orbits
+d = 1500   #distance to BH [ly]
 
 # Constants
 G = 6.67e-11   #gravitational constant [m^3/kg*s^2]
 c = 3e8   #speed of light [m/s]
+h = 6.626e-34   #Planck's consant [J/Hz]
+sigma = 5.67e-8   #Stefan-Boltzmann constant [W/m^2*K^4] 
+kb = 1.38e-23   #Boltzmann constant [J/K]
+m_sun = 1.989e30   #mass of sun [kg]
 
 # Convert to SI Units
 m1 = m1 * 1.989e+30   #mass of primary BH [kg]
@@ -37,6 +34,7 @@ a = a * 3.086e+16   #semimajor axis [m]
 nu = nu * 1e-9   #frequency [m]
 i = math.radians(i)   #inclination [rad]
 omega = math.radians(omega)   #argument of periapse [rad]
+d = d * 9.461e15   #distance to BH [m]
 
 # Mass Ratio and Center of Mass
 q = m2 / m1   #mass ratio
@@ -164,16 +162,7 @@ for j in range (len(t)):
     Iobs2.append((nuobs2[j] / nu)**3 * K * (nu)**(alpha))
 I = K * nu**alpha   #actual intensity [W/m^2]
 
-
-# In[2]:
-
-
-import matplotlib.pyplot as plt
-from scipy.special import logsumexp
-from decimal import Decimal, getcontext
-from mpmath import *
-mp.dps=10
-
+# Minidisk
 def doppler_shift(distance, temperature, velocity, LOSvelocity, time, min_frequency, max_frequency):
     d = distance
     T = temperature
@@ -296,30 +285,6 @@ def doppler_shift(distance, temperature, velocity, LOSvelocity, time, min_freque
             
     return nu, nu_prime, Ndot, Ndot_prime
 
-
-# In[3]:
-
-
-import matplotlib.pyplot as plt
-from scipy.special import logsumexp
-from decimal import Decimal, getcontext
-from mpmath import *
-mp.dps=10
-
-# Input Parameters
-d = 1500   #distance to BH [ly]
-
-# Constants
-G = 6.67e-11   #gravitational constant [m^3/kg*s^2]
-c = 3e8   #speed of light [m/s]
-h = 6.626e-34   #Planck's consant [J/Hz]
-sigma = 5.67e-8   #Stefan-Boltzmann constant [W/m^2*K^4] 
-kb = 1.38e-23   #Boltzmann constant [J/K]
-m_sun = 1.989e30   #mass of sun [kg]
-
-# Convert to SI units
-d = d * 9.461e15   #distance to BH [m]
-
 # Radius Bins
 rs = a / 3   #radius of disk [m] from models in Minidisks in Binary Black Hole Accretion, Geoffrey Ryan and Andrew McFayden
 r_sch = 2 * G * m1 / c**2   #Schwarzschild radius [m] 
@@ -338,18 +303,6 @@ nu_max = 1e17   #[s^-1]
 # Doppler shifts
 [nu, nu_prime, Ndot, Ndot_prime] = doppler_shift(d, T, v1, v1par, t, nu_min, nu_max)
 
-
-# In[4]:
-
-
-plt.figure(1)
-plt.plot(nu[1:], Ndot, 'r-', nu_prime[500,1:], Ndot_prime[500,:], 'k--')
-plt.xlabel("Frequency [Hz]")
-plt.ylabel("Spectral Flux")
-plt.legend(['Source Frame', 'Observer Frame'])
-
-
-# In[ ]:
 
 
 
